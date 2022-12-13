@@ -44,10 +44,12 @@ func capture(device string, port int) error {
 		if tcpLayer == nil {
 			continue
 		}
+
 		tcp, _ := tcpLayer.(*layers.TCP)
 
 		if tcp.DstPort == layers.TCPPort(port) {
 			buf := bytes.NewBuffer(tcp.Payload)
+
 			msgType, err := buf.ReadByte()
 			if err != nil {
 				continue
@@ -55,11 +57,13 @@ func capture(device string, port int) error {
 
 			if msgType == msgQuery {
 				size := make([]byte, lenMsgSize)
-				_, err := buf.Read(size)
-				if err != nil {
+
+				if _, err := buf.Read(size); err != nil {
 					slog.Error("failed to read size", err)
 				}
+
 				payload := make([]byte, int32(binary.BigEndian.Uint32(size))-lenMsgSize)
+
 				if _, err = buf.Read(payload); err != nil {
 					slog.Error("failed to read payload", err)
 				}
