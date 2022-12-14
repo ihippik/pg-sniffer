@@ -65,6 +65,8 @@ func capture(device string, port int, highlight bool) error {
 			}
 
 			if msgType == msgQuery {
+				fmt.Println("- - - >")
+
 				query := extractQuery(buf)
 
 				if highlight {
@@ -72,6 +74,8 @@ func capture(device string, port int, highlight bool) error {
 				} else {
 					fmt.Println(query)
 				}
+
+				fmt.Println("- - - >")
 			}
 		}
 	}
