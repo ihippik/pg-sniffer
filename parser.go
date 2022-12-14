@@ -4,11 +4,14 @@ import (
 	"bytes"
 	"encoding/binary"
 	"fmt"
-	"io"
-	"time"
-
 	"github.com/google/gopacket"
 	"github.com/google/gopacket/layers"
+	"io"
+	"log"
+	"os"
+	"runtime/pprof"
+	"time"
+
 	"github.com/google/gopacket/pcap"
 	"golang.org/x/exp/slog"
 )
@@ -16,12 +19,23 @@ import (
 const (
 	snapshotLen int32 = 1024
 	prom              = false
-	timeout           = 600 * time.Second
+	timeout           = 1 * time.Millisecond
 	msgQuery          = 'Q'
 )
 
 // capture listen tcp traffic with filter and parse SQL-query.
 func capture(device string, port int, highlight bool) error {
+	f, err := os.Create("pg-sniffer.prof")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	if err := pprof.StartCPUProfile(f); err != nil {
+		slog.Error("StartCPUProfile", err)
+	}
+
+	defer pprof.StopCPUProfile()
+
 	handle, err := pcap.OpenLive(device, snapshotLen, prom, timeout)
 	if err != nil {
 		return fmt.Errorf("open live: %w", err)
@@ -37,8 +51,14 @@ func capture(device string, port int, highlight bool) error {
 	slog.Info("start capturing", slog.String("filter", filter), slog.String("device", device))
 
 	packetSource := gopacket.NewPacketSource(handle, handle.LinkType())
+	packetSource.DecodeOptions.Lazy = true
+	packetSource.DecodeOptions.NoCopy = true
 
 	for packet := range packetSource.Packets() {
+		if packet == nil {
+			continue
+		}
+
 		tcpLayer := packet.Layer(layers.LayerTypeTCP)
 		if tcpLayer == nil {
 			continue
