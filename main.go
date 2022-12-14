@@ -44,6 +44,6 @@ func main() {
 	}
 
 	if err := app.Run(os.Args); err != nil {
-		slog.Error("failed to execute", err)
+		slog.Error("failed timeout execute", err)
 	}
 }

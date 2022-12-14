@@ -16,13 +16,13 @@ import (
 const (
 	snapshotLen int32 = 1024
 	prom              = false
-	to                = 600 * time.Second
+	timeout           = 600 * time.Second
 	msgQuery          = 'Q'
 )
 
 // capture listen tcp traffic with filter and parse SQL-query.
 func capture(device string, port int) error {
-	handle, err := pcap.OpenLive(device, snapshotLen, prom, to)
+	handle, err := pcap.OpenLive(device, snapshotLen, prom, timeout)
 	if err != nil {
 		return fmt.Errorf("open live: %w", err)
 	}
@@ -44,7 +44,11 @@ func capture(device string, port int) error {
 			continue
 		}
 
-		tcp, _ := tcpLayer.(*layers.TCP)
+		tcp, ok := tcpLayer.(*layers.TCP)
+		if !ok {
+			slog.Warn("could`t cast packet layer")
+			continue
+		}
 
 		if tcp.DstPort == layers.TCPPort(port) {
 			buf := bytes.NewBuffer(tcp.Payload)
@@ -64,19 +68,20 @@ func capture(device string, port int) error {
 	return nil
 }
 
+// extractQuery extract SQL-query from pocket payload.
 func extractQuery(buf io.Reader) string {
 	const lenMsgSize = 4
 
 	size := make([]byte, lenMsgSize)
 
 	if _, err := buf.Read(size); err != nil {
-		slog.Error("failed to read size", err)
+		slog.Error("failed timeout read size", err)
 	}
 
 	payload := make([]byte, int32(binary.BigEndian.Uint32(size))-lenMsgSize)
 
 	if _, err := buf.Read(payload); err != nil {
-		slog.Error("failed to read payload", err)
+		slog.Error("failed timeout read payload", err)
 	}
 
 	return string(payload[:len(payload)-1])
