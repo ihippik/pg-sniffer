@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/binary"
 	"fmt"
+	"io"
 	"time"
 
 	"github.com/google/gopacket"
@@ -37,8 +38,6 @@ func capture(device string, port int) error {
 
 	packetSource := gopacket.NewPacketSource(handle, handle.LinkType())
 
-	const lenMsgSize = 4
-
 	for packet := range packetSource.Packets() {
 		tcpLayer := packet.Layer(layers.LayerTypeTCP)
 		if tcpLayer == nil {
@@ -56,26 +55,31 @@ func capture(device string, port int) error {
 			}
 
 			if msgType == msgQuery {
-				size := make([]byte, lenMsgSize)
-
-				if _, err := buf.Read(size); err != nil {
-					slog.Error("failed to read size", err)
-				}
-
-				payload := make([]byte, int32(binary.BigEndian.Uint32(size))-lenMsgSize)
-
-				if _, err = buf.Read(payload); err != nil {
-					slog.Error("failed to read payload", err)
-				}
-
-				query := string(payload[:len(payload)-1])
-
+				query := extractQuery(buf)
 				fmt.Println(query)
 			}
 		}
 	}
 
 	return nil
+}
+
+func extractQuery(buf io.Reader) string {
+	const lenMsgSize = 4
+
+	size := make([]byte, lenMsgSize)
+
+	if _, err := buf.Read(size); err != nil {
+		slog.Error("failed to read size", err)
+	}
+
+	payload := make([]byte, int32(binary.BigEndian.Uint32(size))-lenMsgSize)
+
+	if _, err := buf.Read(payload); err != nil {
+		slog.Error("failed to read payload", err)
+	}
+
+	return string(payload[:len(payload)-1])
 }
 
 // deviceList provide network device list.
