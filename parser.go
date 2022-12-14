@@ -4,14 +4,14 @@ import (
 	"bytes"
 	"encoding/binary"
 	"fmt"
-	"github.com/google/gopacket"
-	"github.com/google/gopacket/layers"
 	"io"
 	"log"
 	"os"
 	"runtime/pprof"
 	"time"
 
+	"github.com/google/gopacket"
+	"github.com/google/gopacket/layers"
 	"github.com/google/gopacket/pcap"
 	"golang.org/x/exp/slog"
 )
