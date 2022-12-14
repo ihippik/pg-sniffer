@@ -22,6 +22,11 @@ func main() {
 				Value: 5432,
 				Usage: "PostgreSQL port",
 			},
+			&cli.BoolFlag{
+				Name:  "highlight",
+				Value: false,
+				Usage: "highlight SQL syntax",
+			},
 		},
 		Commands: []*cli.Command{
 			{
@@ -37,7 +42,7 @@ func main() {
 				Aliases: []string{"c"},
 				Usage:   "capture SQL-queries",
 				Action: func(ctx *cli.Context) error {
-					return capture(ctx.String("device"), ctx.Int("port"))
+					return capture(ctx.String("device"), ctx.Int("port"), ctx.Bool("highlight"))
 				},
 			},
 		},

@@ -21,7 +21,7 @@ const (
 )
 
 // capture listen tcp traffic with filter and parse SQL-query.
-func capture(device string, port int) error {
+func capture(device string, port int, highlight bool) error {
 	handle, err := pcap.OpenLive(device, snapshotLen, prom, timeout)
 	if err != nil {
 		return fmt.Errorf("open live: %w", err)
@@ -60,7 +60,12 @@ func capture(device string, port int) error {
 
 			if msgType == msgQuery {
 				query := extractQuery(buf)
-				fmt.Println(query)
+
+				if highlight {
+					highlightSQL(query)
+				} else {
+					fmt.Println(query)
+				}
 			}
 		}
 	}

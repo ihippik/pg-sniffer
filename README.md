@@ -11,10 +11,11 @@ For traffic capturing you needed administrative privileges (for example, `sudo`)
 * list - network device list
 
 ### Flags
-| flag   | description                  |
-|--------|------------------------------|
-| port   | PostgreSQL port              |
-| device | network device for capturing |
+| flag      | description                  |
+|-----------|------------------------------|
+| port      | PostgreSQL port              |
+| device    | network device for capturing |
+| highlight | highlight SQL syntax         |
 
 
 ## Preparation
