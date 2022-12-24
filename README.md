@@ -34,7 +34,7 @@ UDP (User Datagram Protocol) and the application layer contains many commonly us
 Packet capture refers to the collection of data transmitted over a network.
 Anytime the NIC receives data, it checks the packet's destination MAC address against its own.
 And if the addresses match, an exception is thrown that is used to copy data from the network card buffer to the "decision center".
-We look at the packet headers and pass this packet to the appropriate handler. When capturing packets, the driver also sends a copy to us. The usual capture library is libpcap.
+We look at the packet headers and pass this packet to the appropriate handler. When capturing packets, the driver also sends a copy to us. The usual capture library is `libpcap`.
 and that's why we install the dependencies we need.
 By the way, this library is also used by `TCPDump` and `Wireshark`, known to all of us.
 We can also filter traffic to only receive the packets we need (you can see the filter in the code).
